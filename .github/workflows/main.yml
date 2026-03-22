@@ -216,8 +216,8 @@ jobs:
       
       - name: Commit and Push Changes
         run: |
-          git config --local user.email "legiz-ru@users.noreply.github.com"
-          git config --local user.name "legiz-ru"
+          git config --local user.email "sentiox@users.noreply.github.com"
+          git config --local user.name "sentiox"
           git add .
           git commit -m "Generating .mrs rule-sets ${{ env.DATE }}" -a || echo "No changes to commit"
           git push
