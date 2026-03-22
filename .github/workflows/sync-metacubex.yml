@@ -34,6 +34,25 @@ jobs:
             curl -fsSL "$BASE/geo/geosite/$name.mrs" -o "geo/geosite/$name.mrs"
           done
 
+          # Viber AWS IPs — hardcoded known ranges
+          echo "Generating viber_aws_ip.mrs ..."
+          cat > viber_aws.txt << 'EOF'
+5.28.192.0/18
+5.253.84.0/22
+31.204.128.0/19
+37.252.0.0/17
+45.138.228.0/22
+46.17.40.0/21
+62.109.0.0/19
+77.75.144.0/21
+149.154.160.0/20
+EOF
+          curl -fsSL https://github.com/MetaCubeX/mihomo/releases/download/v1.19.9/mihomo-linux-amd64-v1.19.9.deb -o mihomo.deb
+          sudo apt install --fix-missing -y ./mihomo.deb 2>/dev/null || true
+          mkdir -p other
+          mihomo convert-ruleset ipcidr text viber_aws.txt other/viber_aws_ip.mrs
+          rm -f viber_aws.txt mihomo.deb
+
           echo "All files downloaded successfully."
 
       - name: Commit and push if changed
