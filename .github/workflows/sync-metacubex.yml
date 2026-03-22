@@ -1,0 +1,49 @@
+name: Sync MetaCubeX .mrs files
+
+on:
+  schedule:
+    - cron: '0 3 * * *'   # every day at 03:00 UTC
+  workflow_dispatch:        # manual run button
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download .mrs files from MetaCubeX
+        run: |
+          set -e
+          BASE="https://github.com/MetaCubeX/meta-rules-dat/raw/meta"
+
+          mkdir -p geo/geoip geo/geosite
+
+          # GeoIP
+          for name in telegram discord; do
+            echo "Downloading geoip/$name.mrs ..."
+            curl -fsSL "$BASE/geo/geoip/$name.mrs" -o "geo/geoip/$name.mrs"
+          done
+
+          # GeoSite
+          for name in telegram discord youtube; do
+            echo "Downloading geosite/$name.mrs ..."
+            curl -fsSL "$BASE/geo/geosite/$name.mrs" -o "geo/geosite/$name.mrs"
+          done
+
+          echo "All files downloaded successfully."
+
+      - name: Commit and push if changed
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add geo/
+          if git diff --cached --quiet; then
+            echo "No changes, skipping commit."
+          else
+            git commit -m "Sync MetaCubeX .mrs $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+            git push
+          fi
