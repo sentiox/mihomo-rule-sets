@@ -22,8 +22,8 @@ jobs:
 
           mkdir -p geo/geoip geo/geosite
 
-          # GeoIP
-          for name in telegram discord; do
+          # GeoIP (only telegram has geoip)
+          for name in telegram; do
             echo "Downloading geoip/$name.mrs ..."
             curl -fsSL "$BASE/geo/geoip/$name.mrs" -o "geo/geoip/$name.mrs"
           done
