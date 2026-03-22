@@ -1,0 +1,233 @@
+mixed-port: 7890
+#external-controller: 127.0.0.1:9090
+allow-lan: true
+tcp-concurrent: true
+enable-process: true
+find-process-mode: always
+mode: rule
+log-level: info
+ipv6: false # true
+bind-address: "*"
+keep-alive-interval: 30
+unified-delay: false
+
+profile:
+  store-selected: true
+  store-fake-ip: true
+
+sniffer:
+  enable: true
+  sniff:
+    HTTP:
+      ports:
+      - 80
+      - 8080-8880
+      override-destination: true
+    TLS:
+      ports:
+      - 443
+      - 8443
+    QUIC:
+      ports:
+      - 443
+      - 8443
+
+tun:
+  enable: true
+  stack: mixed
+  dns-hijack:
+    - "any:53"
+  auto-route: true
+  auto-detect-interface: true
+  strict-route: true
+
+dns:
+  enable: true
+  use-hosts: true
+  ipv6: false # true
+  # listen: 127.0.0.1:6868
+  enhanced-mode: redir-host
+  default-nameserver:
+    - tls://77.88.8.8 # Yandex DNS over TLS
+    - 195.208.4.1 # НСДИ
+  proxy-server-nameserver:
+    - tls://77.88.8.8 # Yandex DNS over TLS
+    - 195.208.4.1 # НСДИ
+  direct-nameserver:
+    - tls://77.88.8.8 # Yandex DNS over TLS
+    - 195.208.4.1 # НСДИ
+  nameserver:
+    - https://cloudflare-dns.com/dns-query #DNS for proxy
+
+proxies: # LEAVE THIS LINE!
+
+proxy-providers:
+  russlanddialer: # Цепочка из РФ в другие страны
+    type: inline
+    exclude-filter: "🇷🇺|🇳🇱" # Фильтр прокси, которые не будут использоваться для цепочки, естественно RU и что-то по вашему выбору
+    remnawave: # Кастомное поле используемое только в Remnawave (добавляет прокси для создания цепочки)
+      include-proxies: true
+    override:
+      dialer-proxy: 🇷🇺 Russia # Название хоста который будет цепочкой для выхода в Европу
+      additional-prefix: "🇷🇺➡️" # Приставка к названию прокси (обозначает мост из РФ) так как в подписку нельзя добавить два прокси с одинаковыми именами
+    payload:
+
+proxy-groups:
+  - name: 🌍 VPN
+    icon: https://cdn.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/Hijacking.png
+    type: select
+    proxies:
+      - ⚡️ Fastest
+      # LEAVE THIS LINE!
+    use: # Данный параметр добавляет в группу цепочки
+      - russlanddialer
+  - name: ▶️ YouTube # Прокси группа для направления трафика YouTube
+    icon: https://cdn.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/YouTube.png
+    type: select
+    proxies:
+      - 🌍 VPN
+      - ⚡️ Fastest
+      - 🎲 Случайный 
+      # LEAVE THIS LINE!
+    use: # Данный параметр добавляет в группу цепочки
+      - russlanddialer
+  - name: 💬 Discord  # Прокси группа для направления трафика Discord
+    icon: https://cdn.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/Discord.png
+    type: select
+    proxies:
+      - 🌍 VPN
+      - ⚡️ Fastest
+      - 🎲 Случайный 
+      # LEAVE THIS LINE!
+    use: # Данный параметр добавляет в группу цепочки
+      - russlanddialer
+  - name: 💌 Telegram
+    icon: https://cdn.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/Telegram.png
+    type: select
+    proxies:
+      - 🔓 Без VPN
+      - 🌍 VPN
+      - ⚡️ Fastest
+      - 🎲 Случайный
+      # LEAVE THIS LINE!
+    use: # Данный параметр добавляет в группу цепочки
+      - russlanddialer
+  - name: ⚡️ Fastest
+    icon: https://cdn.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/Auto.png
+    type: url-test
+    tolerance: 150
+    url: https://cp.cloudflare.com/generate_204
+    interval: 300
+    include-all: true # Добавляет все имеющиеся прокси
+    exclude-filter: "🇷🇺" # Исключает из них Россию
+    remnawave: # Кастомное поле используемое только в Remnawave (отключает добавление всех прокси в данную секцию, кроме указанных вручную)
+      include-proxies: false
+    proxies:
+      # LEAVE THIS LINE!
+  - name: 🎲 Случайный 
+    icon: https://cdn.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/Round_Robin.png
+    type: select
+    remnawave: # Кастомное поле используемое только в Remnawave (добавляет один случайный хост пользователя в данную группу, меняется при обновлении подписки)
+      select-random-proxy: true
+    proxies:
+      # LEAVE THIS LINE!
+  - name: PROXY
+    remnawave:
+      include-proxies: false
+    type: select
+    hidden: true
+    proxies:
+      - 🌍 VPN
+  - name: 🔓 Без VPN
+    remnawave:
+      include-proxies: false
+    type: select
+    hidden: true
+    proxies:
+      - DIRECT
+  
+rule-providers:
+  telegram_domains:
+    type: http
+    behavior: domain
+    format: mrs
+    url: https://github.com/MetaCubeX/meta-rules-dat/raw/meta/geo/geosite/telegram.mrs
+    path: ./rule-sets/telegram_domains.mrs
+  telegram_ips:
+    type: http
+    behavior: ipcidr
+    format: mrs
+    url: https://github.com/MetaCubeX/meta-rules-dat/raw/meta/geo/geoip/telegram.mrs
+    path: ./rule-sets/telegram_ips.mrs
+  discord_domains:
+    type: http
+    behavior: domain
+    format: mrs
+    url: https://github.com/MetaCubeX/meta-rules-dat/raw/meta/geo/geosite/discord.mrs
+    path: ./rule-sets/discord_domains.mrs
+  discord_voiceips:
+    type: http
+    behavior: ipcidr
+    format: mrs
+    url: https://cdn.jsdelivr.net/gh/legiz-ru/mihomo-rule-sets@main/other/discord-voice-ip-list.mrs
+    path: ./rule-sets/discord_voiceips.mrs
+  youtube:
+    type: http
+    behavior: domain
+    format: mrs
+    url: https://github.com/MetaCubeX/meta-rules-dat/raw/meta/geo/geosite/youtube.mrs
+    path: ./rule-sets/youtube.mrs
+  torrent-trackers:
+    type: http
+    behavior: domain
+    format: mrs
+    url: https://github.com/legiz-ru/mihomo-rule-sets/raw/main/other/torrent-trackers.mrs
+    path: ./rule-sets/torrent-trackers.mrs
+    interval: 86400
+  torrent-clients:
+    type: http
+    behavior: classical
+    format: yaml
+    url: https://github.com/legiz-ru/mihomo-rule-sets/raw/main/other/torrent-clients.yaml
+    path: ./rule-sets/torrent-clients.yaml
+    interval: 86400
+  oisd_big:
+    type: http
+    behavior: domain
+    format: mrs
+    url: https://github.com/legiz-ru/mihomo-rule-sets/raw/main/oisd/big.mrs
+    path: ./oisd/big.mrs
+    interval: 86400
+  ru-bundle:
+    type: http
+    behavior: domain
+    format: mrs
+    url: https://github.com/legiz-ru/mihomo-rule-sets/raw/main/ru-bundle/rule.mrs
+    path: ./ru-bundle/rule.mrs
+    interval: 86400
+  refilter_domains:
+    type: http
+    behavior: domain
+    format: mrs
+    url: https://github.com/legiz-ru/mihomo-rule-sets/raw/main/re-filter/domain-rule.mrs
+    path: ./re-filter/domain-rule.mrs
+    interval: 86400
+  refilter_ipsum:
+    type: http
+    behavior: ipcidr
+    format: mrs
+    url: https://github.com/legiz-ru/mihomo-rule-sets/raw/main/re-filter/ip-rule.mrs
+    path: ./re-filter/ip-rule.mrs
+    interval: 86400
+rules: # ВСЕ ПРАВИЛА ЗАКОМЕНТИРОВАНЫ ВАМ ТРЕБУЕТСЯ ВЫБРАТЬ НУЖНОЕ
+  # - OR,((RULE-SET,discord_domains),(RULE-SET,discord_voiceips),(PROCESS-NAME,Discord.exe)),💬 Discord
+  # - RULE-SET,youtube,▶️ YouTube 
+  # - OR,((RULE-SET,telegram_domains),(RULE-SET,telegram_ips)),💌 Telegram
+  # - OR,((DOMAIN,ipwhois.app),(DOMAIN,ipwho.is),(DOMAIN,api.ip.sb),(DOMAIN,ipapi.co),(DOMAIN,ipinfo.io)),🌍 VPN # IP Checker FlClash and Pandora-Box
+  # - OR,((RULE-SET,torrent-clients),(RULE-SET,torrent-trackers)),🔓 Без VPN # Принудительное директирование торрент трекеров и приложений
+  # - RULE-SET,oisd_big,REJECT
+  # - PROCESS-NAME,org.cromite.cromite,🌍 VPN #Cromite Android Browser
+  # - RULE-SET,ru-bundle,🌍 VPN
+  # - RULE-SET,refilter_domains,🌍 VPN
+  # - RULE-SET,refilter_ipsum,🌍 VPN
+  - MATCH,🔓 Без VPN
