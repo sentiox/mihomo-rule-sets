@@ -29,7 +29,7 @@ jobs:
           done
 
           # GeoSite
-          for name in telegram discord youtube; do
+          for name in telegram discord youtube whatsapp tiktok; do
             echo "Downloading geosite/$name.mrs ..."
             curl -fsSL "$BASE/geo/geosite/$name.mrs" -o "geo/geosite/$name.mrs"
           done
