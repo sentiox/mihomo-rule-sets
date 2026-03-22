@@ -18,7 +18,7 @@ jobs:
       - name: Download .mrs files from MetaCubeX
         run: |
           set -e
-          BASE="https://github.com/MetaCubeX/meta-rules-dat/raw/meta"
+          BASE="https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta"
 
           mkdir -p geo/geoip geo/geosite
 
